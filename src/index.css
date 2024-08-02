@@ -16,6 +16,10 @@ code {
   min-width: 100%;
 }
 
+.ant-row {
+  min-width: 100%;
+}
+
 .builton {
   background-image: url("components/builton.svg");
   width: 185px;
