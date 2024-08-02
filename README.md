@@ -39,7 +39,7 @@ $ cargo test-bpf
 
 Solana program template in Rust
 
-### program/src/lib.rs
+### src/lib.rs
 * process_instruction function is used to run all calls issued to the smart contract
 
 ## src/actions
