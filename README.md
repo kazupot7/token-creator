@@ -28,6 +28,7 @@ yarn start
 4. Install NPM, Yarn
 
 # Build Smart Contract (compiled for BPF)
+Run the following from the program/ subdirectory:
 
 ```bash
 $ cargo build-bpf
@@ -56,6 +57,8 @@ Generic react hooks to interact with token program:
 * useUserBalance - query for balance of any user token by mint, returns:
     - balance
     - balanceLamports
+    - balanceInUSD
+* useUserTotalBalance - aggregates user balance across all token accounts and returns value in USD
     - balanceInUSD
 * useAccountByMint
 * useTokenName
