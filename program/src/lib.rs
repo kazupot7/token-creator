@@ -2,8 +2,6 @@ use solana_program::{
     account_info::AccountInfo, entrypoint, entrypoint::ProgramResult, msg, pubkey::Pubkey,
 };
 
-solana_program::declare_id!("BpfProgram1111111111111111111111111111111111");
-
 entrypoint!(process_instruction);
 fn process_instruction(
     program_id: &Pubkey,

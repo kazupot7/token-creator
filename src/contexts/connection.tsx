@@ -1,19 +1,18 @@
-import { useLocalStorageState } from "./../utils/utils";
+import { KnownToken, useLocalStorageState } from "./../utils/utils";
 import {
   Account,
   clusterApiUrl,
   Connection,
-  PublicKey,
   Transaction,
   TransactionInstruction,
 } from "@solana/web3.js";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { notify } from "./../utils/notifications";
 import { ExplorerLink } from "../components/ExplorerLink";
+import LocalTokens from "../config/tokens.json";
 import { setProgramIds } from "../utils/ids";
 import { WalletAdapter } from "./wallet";
-import { cache, getMultipleAccounts, MintParser } from "./accounts";
-import { TokenListProvider, ENV as ChainID, TokenInfo } from "@solana/spl-token-registry";
+import { cache } from "./accounts";
 
 export type ENV =
   | "mainnet-beta"
@@ -25,23 +24,10 @@ export const ENDPOINTS = [
   {
     name: "mainnet-beta" as ENV,
     endpoint: "https://solana-api.projectserum.com/",
-    chainID: ChainID.MainnetBeta,
   },
-  {
-    name: "testnet" as ENV,
-    endpoint: clusterApiUrl("testnet"),
-    chainID: ChainID.Testnet,
-  },
-  {
-    name: "devnet" as ENV,
-    endpoint: clusterApiUrl("devnet"),
-    chainID: ChainID.Devnet,
-  },
-  {
-    name: "localnet" as ENV,
-    endpoint: "http://127.0.0.1:8899",
-    chainID: ChainID.Devnet,
-  },
+  { name: "testnet" as ENV, endpoint: clusterApiUrl("testnet") },
+  { name: "devnet" as ENV, endpoint: clusterApiUrl("devnet") },
+  { name: "localnet" as ENV, endpoint: "http://127.0.0.1:8899" },
 ];
 
 const DEFAULT = ENDPOINTS[0].endpoint;
@@ -55,8 +41,8 @@ interface ConnectionConfig {
   setSlippage: (val: number) => void;
   env: ENV;
   setEndpoint: (val: string) => void;
-  tokens: TokenInfo[];
-  tokenMap: Map<string, TokenInfo>;
+  tokens: KnownToken[];
+  tokenMap: Map<string, KnownToken>;
 }
 
 const ConnectionContext = React.createContext<ConnectionConfig>({
@@ -68,7 +54,7 @@ const ConnectionContext = React.createContext<ConnectionConfig>({
   sendConnection: new Connection(DEFAULT, "recent"),
   env: ENDPOINTS[0].name,
   tokens: [],
-  tokenMap: new Map<string, TokenInfo>(),
+  tokenMap: new Map<string, KnownToken>(),
 });
 
 export function ConnectionProvider({ children = undefined as any }) {
@@ -89,40 +75,33 @@ export function ConnectionProvider({ children = undefined as any }) {
     endpoint,
   ]);
 
-  const chain =
-    ENDPOINTS.find((end) => end.endpoint === endpoint) || ENDPOINTS[0];
-  const env = chain.name;
+  const env =
+    ENDPOINTS.find((end) => end.endpoint === endpoint)?.name ||
+    ENDPOINTS[0].name;
 
-  const [tokens, setTokens] = useState<TokenInfo[]>([]);
-  const [tokenMap, setTokenMap] = useState<Map<string, TokenInfo>>(new Map());
+  const [tokens, setTokens] = useState<KnownToken[]>([]);
+  const [tokenMap, setTokenMap] = useState<Map<string, KnownToken>>(new Map());
   useEffect(() => {
     cache.clear();
     // fetch token files
-    (async () => {
-      const res = await new TokenListProvider().resolve();
-      const list = res
-        .filterByChainId(chain.chainID)
-        .excludeByTag("nft")
-        .getList();
-      const knownMints = list.reduce((map, item) => {
-        map.set(item.address, item);
-        return map;
-      }, new Map<string, TokenInfo>());
-
-      const accounts = await getMultipleAccounts(connection, [...knownMints.keys()], 'single');
-      accounts.keys.forEach((key, index) => {
-        const account = accounts.array[index];
-        if(!account) {
-          return;
-        }
-
-        cache.add(new PublicKey(key), account, MintParser);
+    window
+      .fetch(
+        `https://raw.githubusercontent.com/project-serum/serum-ts/master/packages/tokens/src/${env}.json`
+      )
+      .then((res) => {
+        return res.json();
       })
+      .catch((err) => [])
+      .then((list: KnownToken[]) => {
+        const knownMints = [...LocalTokens, ...list].reduce((map, item) => {
+          map.set(item.mintAddress, item);
+          return map;
+        }, new Map<string, KnownToken>());
 
-      setTokenMap(knownMints);
-      setTokens(list);
-    })();
-  }, [connection, chain]);
+        setTokenMap(knownMints);
+        setTokens(list);
+      });
+  }, [env]);
 
   setProgramIds(env);
 

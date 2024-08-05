@@ -9,7 +9,6 @@ import { useMemo } from "react";
 import { EventEmitter } from "./../utils/eventEmitter";
 
 import { DexMarketParser } from "./../models/dex";
-import { useUserAccounts } from "../hooks";
 
 export const BONFIDA_POOL_INTERVAL = 30 * 60_000; // 30 min
 
@@ -39,7 +38,6 @@ export function MarketProvider({ children = null as any }) {
   const { endpoint } = useConnectionConfig();
   const accountsToObserve = useMemo(() => new Map<string, number>(), []);
   const [marketMints, setMarketMints] = useState<string[]>([]);
-  const { userAccounts } = useUserAccounts();
 
   const connection = useMemo(() => new Connection(endpoint, "recent"), [
     endpoint,
@@ -54,10 +52,9 @@ export function MarketProvider({ children = null as any }) {
       );
 
       const marketAddress = MINT_TO_MARKET[mintAddress];
-      const marketInfo = MARKETS.filter(m => !m.deprecated).find(
-        (m) => m.name === `${SERUM_TOKEN?.name}/USDC` || 
-               m.name === `${SERUM_TOKEN?.name}/USDT` || 
-               m.address.toBase58() === marketAddress
+      const marketName = `${SERUM_TOKEN?.name}/USDC`;
+      const marketInfo = MARKETS.find(
+        (m) => m.name === marketName || m.address.toBase58() === marketAddress
       );
 
       if (marketInfo) {
@@ -205,10 +202,6 @@ export function MarketProvider({ children = null as any }) {
     },
     [setMarketMints, marketMints]
   );
-
-  useEffect(() => {
-    precacheMarkets(userAccounts.map(a => a.info.mint.toBase58()));
-  }, [userAccounts, precacheMarkets]);
 
   return (
     <MarketsContext.Provider
