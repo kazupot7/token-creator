@@ -12,7 +12,7 @@
     "@solana/spl-token-registry": "^0.2.64",
     "@solana/spl-token-swap": "0.1.0",
     "@solana/web3.js": "^1.7.1",
-    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/jest-dom": "^6.4.8",
     "@testing-library/react": "^9.5.0",
     "@types/react-router-dom": "^5.1.6",
     "antd": "^4.6.6",
@@ -65,8 +65,6 @@
   "devDependencies": {
     "@types/bn.js": "^5.1.5",
     "@types/bs58": "^4.0.1",
-    "@types/jest": "^24.9.1",
-    "@types/ledgerhq__hw-transport": "^4.21.8",
     "@types/ledgerhq__hw-transport-webusb": "^4.70.1",
     "@types/node": "^12.12.62",
     "@types/react": "^16.9.50",
