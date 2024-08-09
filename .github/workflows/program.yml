@@ -63,7 +63,7 @@ jobs:
 
       # Install Solana
       - name: Cache Solana binaries
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.cache/solana
           key: ${{ runner.os }}-${{ env.SOLANA_VERSION }}
